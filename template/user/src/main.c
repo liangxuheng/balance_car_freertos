@@ -27,10 +27,14 @@
 #include "app_control.h"
 #include "app_rc.h"
 #include "motor_do.h"
+#include "app_ctx.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
 static uint8_t state = 0;
+
+/* 应用上下文：board_init() 后填充一次，业务回调通过它拿句柄（替代直接 extern 全局） */
+static balance_app_t g_app;
 
 /**
  * @brief  用户按键回调：短按切换启停状态
@@ -41,9 +45,9 @@ static void button_clicked_cb(void *button, uint8_t clicks)
 {
 	if (!button || clicks != 1) return;
 	state = !state;
-	app_control_reset(app_control_1);
-	motor_do_set_do_cmd(motor_handler_my, state);
-	motor_do_set_do_set(motor_handler_my, 0);
+	app_control_reset(g_app.control);
+	motor_do_set_do_cmd(g_app.motor, state);
+	motor_do_set_do_set(g_app.motor, 0);
 }
 
 /**
@@ -54,6 +58,13 @@ static void init_task(void *p)
 {
 	(void)p;
 	board_init();
+	/* 一次性打包句柄到 ctx，业务回调通过 g_app 访问 */
+	g_app.motor   = motor_handler_my;
+	g_app.control = app_control_1;
+	g_app.rc      = app_rc_1;
+	g_app.mpu     = mpu6050_1;
+	g_app.button  = my_button_1;
+	g_app.usart   = usart_1;
 	Delay_Init(timer_us);
 	app_vbat_init(timer_1, adc_1, __bat_led_init);
 	app_button_init(my_button_1, button_usr_read, button_clicked_cb);
