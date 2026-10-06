@@ -1,0 +1,23 @@
+# Keil build output
+template/Objects/
+template/Listings/
+template/DebugConfig/
+template/RTE/
+*.o
+*.crf
+*.d
+*.dep
+*.map
+*.lnp
+*.htm
+*.axf
+*.hex
+*.bin
+*.scvd
+*.uvguix.*
+*.bak
+*.lst
+
+# IDE
+.vs/
+.vscode/
